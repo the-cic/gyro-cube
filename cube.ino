@@ -66,7 +66,7 @@ void setupAcc(void) {
       blink(red, 1, 250);
     }
   } else {
-    blink(green, 5, 50);
+    blink(green, 1, 50);
     delay(500);
 
     powerUp();
