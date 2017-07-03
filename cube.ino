@@ -1,9 +1,21 @@
 
+ #define MPU_6050
+
 #include <math.h>
 #include <NeoPixelBus.h>
 #include <Wire.h>
+
+#ifdef MPU_6050
+
+#include "I2Cdev.h"
+#include "MPU6050.h"
+
+#else
+
 #include <Adafruit_Sensor.h>
 #include <Adafruit_LSM303_U.h>
+
+#endif
 
 #include "AxisControl.h"
 #include "Engine.h"
@@ -13,12 +25,26 @@ const uint8_t PixelPin = 7;  // make sure to set this to the correct pin, ignore
 
 NeoPixelBus<NeoGrbFeature, Neo800KbpsMethod> strip(PixelCount, PixelPin);
 
+#ifdef MPU_6050
+MPU6050 accelgyro;
+#else
 /* Assign a unique ID to this sensor at the same time */
 Adafruit_LSM303_Accel_Unified accel = Adafruit_LSM303_Accel_Unified(54321);
+#endif
+
+int16_t iax, iay, iaz;
+int16_t igx, igy, igz;
+
+float ax, ay, az;
+float gx, gy, gz;
 
 AxisControl xAxisControl;
 AxisControl yAxisControl;
 AxisControl zAxisControl;
+
+AxisControl rxAxisControl;
+AxisControl ryAxisControl;
+AxisControl rzAxisControl;
 
 Engine rearEngine(0, strip);
 Engine frontEngine(1, strip);
@@ -34,7 +60,14 @@ Engine trEngine(4, strip);
 Engine tlEngine(5, strip);
 
 void setup() {
-  // put your setup code here, to run once:
+#ifdef MPU_6050
+  // join I2C bus (I2Cdev library doesn't do this automatically)
+  #if I2CDEV_IMPLEMENTATION == I2CDEV_ARDUINO_WIRE
+      Wire.begin();
+  #elif I2CDEV_IMPLEMENTATION == I2CDEV_BUILTIN_FASTWIRE
+      Fastwire::setup(400, true);
+  #endif
+#endif
 
   Serial.begin(9600);
 
@@ -45,8 +78,6 @@ void setup() {
 }
 
 void loop() {
-  // put your main code here, to run repeatedly:
-
   loopAcc();
 
   // 60 fps
@@ -56,9 +87,15 @@ void loop() {
 void setupAcc(void) {
   HsbColor red(0.0, 1, 0.5);
   HsbColor green(0.25, 1, 0.5);
+  blink(red, 1, 50);
+  blink(green, 1, 50);
   
   /* Initialise the sensor */
+#ifdef MPU_6050
+  if (!accelgyro.testConnection())
+#else
   if(!accel.begin())
+#endif
   {
     /* There was a problem detecting the ADXL345 ... check your connections */
     Serial.println("Ooops, no LSM303 detected ... Check your wiring!");
@@ -74,12 +111,45 @@ void setupAcc(void) {
 }
 
 void loopAcc(void) {
+#ifdef MPU_6050
+  accelgyro.getMotion6(&iax, &iay, &iaz, &igx, &igy, &igz);
+
+  ax = iax / 2000.0;
+  ay = -iay / 2000.0;
+  az = iaz / 2000.0;
+
+  gx = igx / 2000.0;
+  gy = igy / 2000.0;
+  gz = igz / 2000.0;
+
+//        Serial.print("a/g:\t");
+//        Serial.print(ax); Serial.print("\t");
+//        Serial.print(ay); Serial.print("\t");
+//        Serial.print(az); 
+//        Serial.print("\t");
+//        Serial.print(gx); Serial.print("\t");
+//        Serial.print(gy); Serial.print("\t");
+//        Serial.print(gz);
+//        Serial.println();
+  
+#else  
   sensors_event_t event;
   accel.getEvent(&event);
+  ax = event.acceleration.x;
+  ay = event.acceleration.y;
+  az = event.acceleration.z;
+  gx = 0;
+  gy = 0;
+  gz = 0;
+#endif  
 
-  xAxisControl.updateWithAcc(event.acceleration.x);
-  yAxisControl.updateWithAcc(event.acceleration.y);
-  zAxisControl.updateWithAcc(event.acceleration.z);
+  xAxisControl.updateWithAcc(ax);
+  yAxisControl.updateWithAcc(ay);
+  zAxisControl.updateWithAcc(az);
+
+  rxAxisControl.updateWithAcc(gx);
+//  ryAxisControl.updateWithAcc(gy);
+//  rzAxisControl.updateWithAcc(gz);
 
   if (xAxisControl.fwAccDiffSmooth > 1) {
     rearEngine.setBoost(1);
@@ -93,17 +163,19 @@ void loopAcc(void) {
 //  topEngine.setThrottle(zAxisControl.throttle);
 //  bottomEngine.setThrottle(-zAxisControl.throttle);
   
-  blEngine.setThrottle((-yAxisControl.throttle -zAxisControl.throttle) * 0.5);
-  brEngine.setThrottle((yAxisControl.throttle - zAxisControl.throttle) * 0.5);
-  trEngine.setThrottle((yAxisControl.throttle + zAxisControl.throttle) * 0.5);
-  tlEngine.setThrottle((-yAxisControl.throttle + zAxisControl.throttle) * 0.5);
+  blEngine.setThrottle((-yAxisControl.throttle - zAxisControl.throttle) * 0.5 + rxAxisControl.throttle * 0.3);
+  brEngine.setThrottle((yAxisControl.throttle - zAxisControl.throttle) * 0.5 - rxAxisControl.throttle * 0.3);
+  trEngine.setThrottle((yAxisControl.throttle + zAxisControl.throttle) * 0.5 +  rxAxisControl.throttle * 0.3);
+  tlEngine.setThrottle((-yAxisControl.throttle + zAxisControl.throttle) * 0.5 - rxAxisControl.throttle * 0.3);
   
   strip.Show();
 
-  //dump();
+  dump();
 }
 
 void powerUp() {
+  rearEngine.setPower(1);
+  frontEngine.setPower(1);
   blEngine.setPower(1);
   brEngine.setPower(1);
   trEngine.setPower(1);
@@ -155,11 +227,14 @@ void dump() {
 //  Serial.print(color1.H);
 
 //  Serial.print(" ");
-  Serial.print(xAxisControl.throttle);
+  Serial.print(xAxisControl.throttle * 10);
   Serial.print(" ");
-  Serial.print(yAxisControl.throttle);
+  Serial.print(yAxisControl.throttle * 10);
   Serial.print(" ");
-  Serial.print(zAxisControl.throttle);
+  Serial.print(zAxisControl.throttle * 10);
+  
+  Serial.print(" ");
+  Serial.print(rxAxisControl.throttle * 10);
   
   Serial.println();
 }
