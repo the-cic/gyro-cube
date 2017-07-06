@@ -46,18 +46,22 @@ AxisControl rxAxisControl;
 AxisControl ryAxisControl;
 AxisControl rzAxisControl;
 
+AxisControl *axisControls[] = {&xAxisControl, &yAxisControl, &zAxisControl, &rxAxisControl, &ryAxisControl, &rzAxisControl};
+
 Engine rearEngine(0, strip);
 Engine frontEngine(1, strip);
-
-//Engine leftEngine(2, strip);
-//Engine rightEngine(3, strip);
-//Engine topEngine(4, strip);
-//Engine bottomEngine(5, strip);
 
 Engine blEngine(2, strip);
 Engine brEngine(3, strip);
 Engine trEngine(4, strip);
 Engine tlEngine(5, strip);
+
+float frontW[] = {-1,  0,  0,   0, 0, 0};
+float rearW[]  = { 1,  0,  0,   0, 0, 0};
+float blW[]    = { 0,  1,  1,   0.5, 0, 0};
+float brW[]    = { 0, -1,  1,  -0.5, 0, 0};
+float tlW[]    = { 0,  1, -1,  -0.5, 0, 0};
+float trW[]    = { 0, -1, -1,   0.5, 0, 0};
 
 void setup() {
 #ifdef MPU_6050
@@ -75,6 +79,13 @@ void setup() {
   strip.Show();
 
   setupAcc();
+
+  frontEngine.setControlWeights(frontW, 6);
+  rearEngine.setControlWeights(rearW, 6);
+  blEngine.setControlWeights(blW, 6);
+  brEngine.setControlWeights(brW, 6);
+  tlEngine.setControlWeights(tlW, 6);
+  trEngine.setControlWeights(trW, 6);
 }
 
 void loop() {
@@ -92,6 +103,8 @@ void setupAcc(void) {
   
   /* Initialise the sensor */
 #ifdef MPU_6050
+  accelgyro.initialize();
+
   if (!accelgyro.testConnection())
 #else
   if(!accel.begin())
@@ -122,16 +135,6 @@ void loopAcc(void) {
   gy = igy / 2000.0;
   gz = igz / 2000.0;
 
-//        Serial.print("a/g:\t");
-//        Serial.print(ax); Serial.print("\t");
-//        Serial.print(ay); Serial.print("\t");
-//        Serial.print(az); 
-//        Serial.print("\t");
-//        Serial.print(gx); Serial.print("\t");
-//        Serial.print(gy); Serial.print("\t");
-//        Serial.print(gz);
-//        Serial.println();
-  
 #else  
   sensors_event_t event;
   accel.getEvent(&event);
@@ -148,29 +151,23 @@ void loopAcc(void) {
   zAxisControl.updateWithAcc(az);
 
   rxAxisControl.updateWithAcc(gx);
-//  ryAxisControl.updateWithAcc(gy);
-//  rzAxisControl.updateWithAcc(gz);
+  ryAxisControl.updateWithAcc(gy);
+  rzAxisControl.updateWithAcc(gz);
 
   if (xAxisControl.fwAccDiffSmooth > 1) {
     rearEngine.setBoost(1);
   }
 
-  rearEngine.setThrottle(xAxisControl.throttle);
-  frontEngine.setThrottle(-xAxisControl.throttle);
-  
-//  leftEngine.setThrottle(-yAxisControl.throttle);
-//  rightEngine.setThrottle(yAxisControl.throttle);
-//  topEngine.setThrottle(zAxisControl.throttle);
-//  bottomEngine.setThrottle(-zAxisControl.throttle);
-  
-  blEngine.setThrottle((-yAxisControl.throttle - zAxisControl.throttle) * 0.5 + rxAxisControl.throttle * 0.3);
-  brEngine.setThrottle((yAxisControl.throttle - zAxisControl.throttle) * 0.5 - rxAxisControl.throttle * 0.3);
-  trEngine.setThrottle((yAxisControl.throttle + zAxisControl.throttle) * 0.5 +  rxAxisControl.throttle * 0.3);
-  tlEngine.setThrottle((-yAxisControl.throttle + zAxisControl.throttle) * 0.5 - rxAxisControl.throttle * 0.3);
+  frontEngine.applyControls(axisControls);
+  rearEngine.applyControls(axisControls);
+  blEngine.applyControls(axisControls);
+  brEngine.applyControls(axisControls);
+  trEngine.applyControls(axisControls);
+  tlEngine.applyControls(axisControls);
   
   strip.Show();
 
-  dump();
+//  dump();
 }
 
 void powerUp() {
@@ -227,6 +224,7 @@ void dump() {
 //  Serial.print(color1.H);
 
 //  Serial.print(" ");
+
   Serial.print(xAxisControl.throttle * 10);
   Serial.print(" ");
   Serial.print(yAxisControl.throttle * 10);

@@ -44,3 +44,21 @@ void Engine::setPower(float power1)
   powerSetting = power1;
 }
 
+void Engine::applyControls(AxisControl *controls[])
+{
+  float totalThrottle = 0;
+  
+  for (int i = 0; i < weightsCount; i++) {
+    totalThrottle += controls[i]->throttle * controlWeights[i];
+  }
+
+  this->setThrottle(totalThrottle);
+}
+
+void Engine::setControlWeights(float weights[], int count)
+{
+  controlWeights = weights;
+  weightsCount = count;
+}
+
+
