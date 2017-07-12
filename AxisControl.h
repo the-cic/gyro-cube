@@ -3,11 +3,16 @@
 class AxisControl
 {  
   public:
-  float vel;
-  float fwAcc;
+  float acc;
+  float rawAcc;
+  float avgAcc;
   float throttle;
-  float boost;
-  float fwAccDiffSmooth;
+  float rawThrottle;
+  float throttleAcc;
+  float fwAcc;
+  float rwAcc;
+  float fwDecay;
+  float rwDecay;
 
   AxisControl();
 

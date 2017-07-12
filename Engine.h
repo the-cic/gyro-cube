@@ -15,7 +15,7 @@ class Engine
   void setBoost(float boost1);
   void setPower(float power1);
   void applyControls(AxisControl *controls[]);
-  void setControlWeights(float weights[], int count);
+  void setControlWeights(const float weights[], int count);
 
   private:
   
@@ -28,7 +28,8 @@ class Engine
   float boost;
   float power;
   float powerSetting;
-  float* controlWeights;
+  const float* controlWeights;
   int weightsCount;
+  int coolOff;
 
 };

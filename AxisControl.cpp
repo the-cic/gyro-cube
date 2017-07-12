@@ -3,23 +3,53 @@
 
 AxisControl::AxisControl()
 {
-  vel = 0;
-  fwAcc = 0;
+  acc = 0;
+  rawAcc = 0;
+  avgAcc = 0;
   throttle = 0;
-  boost = 0;
-  fwAccDiffSmooth = 0;
+  rawThrottle = 0;
+  throttleAcc = 0;
+  fwAcc = 0;
+  rwAcc = 0;
+  fwDecay = 0;
+  rwDecay = 0;
 }
 
-void AxisControl::updateWithAcc(float rawAcc)
+void AxisControl::updateWithAcc(float a)
 {
-  float oldFwAcc = fwAcc;
-  fwAcc += (rawAcc - fwAcc) * 0.05;
-  float fwAccDif = fwAcc - oldFwAcc;
+  const float decayRate = 0.005;
+  
+  rawAcc = a / 9.8;
+  acc += (rawAcc - acc) * 0.2;
+  avgAcc += (acc - avgAcc) * 0.5;
 
-  fwAccDiffSmooth += fwAccDif;
-  fwAccDiffSmooth *= 0.7;
-  
-  vel += fwAccDiffSmooth;
-  
-  throttle = fwAccDiffSmooth * 0.5 /*+ fwAcc * 0.01*/ + 0.005 * vel;
+  float nAcc = acc - avgAcc * 0.9;
+
+  if (nAcc > fwAcc) {
+    fwAcc = nAcc;
+    fwDecay = 0;
+  }
+
+  if (-nAcc > rwAcc) {
+    rwAcc = -nAcc;
+    rwDecay = 0;
+  }
+
+  if (fwAcc > 0) {
+    fwAcc -= fwDecay;
+    fwDecay += decayRate;
+  } else {
+    fwAcc = 0;
+  }
+
+  if (rwAcc > 0) {
+    rwAcc -= rwDecay;
+    rwDecay += decayRate;
+  } else {
+    rwAcc = 0;
+  }
+
+  rawThrottle = fwAcc - rwAcc;
+  throttleAcc = (rawThrottle - throttle) * 0.5;
+  throttle += throttleAcc;
 }

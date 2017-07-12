@@ -8,6 +8,8 @@ Engine::Engine(int pixel1, NeoPixelBus<NeoGrbFeature, Neo800KbpsMethod> &strip1)
   boostColor = HsbColor(0.05, 1, 1);
   power = 0;
   powerSetting = 0;
+  coolOff = 0;
+  boost = 0;
 }
 
 void Engine::setThrottle(float throttle)
@@ -16,20 +18,36 @@ void Engine::setThrottle(float throttle)
   if (boost > 0) {
     boost -= 0.05;
     boostF = boost > 0.5 ? 1 : boost * 2;
+    boostF += sin(boost * 180) * 0.3;
+    if (boostF > 1) {
+      boostF = 1;
+    }
   } else {
     boost = 0;
   }
 
   float B = throttle > 0 ? throttle : 0;
   B *= power;
-  B += 0.01;
-  
+
+  if (B > 0.02) {
+    coolOff = 5;
+  } else {
+    coolOff--;
+    if (coolOff > 0) {
+      B = 0.02;
+    } else {
+      B = 0;
+    }
+  }
+
   B = (B > 1) ? 1 : B;
 
   power += (powerSetting - power) * 0.01;
 
   engineColor.B = B;
-  HsbColor color = HsbColor::LinearBlend<NeoHueBlendShortestDistance>(engineColor, boostColor, boostF);
+  HsbColor color = boostF > 0
+                   ? HsbColor::LinearBlend<NeoHueBlendShortestDistance>(engineColor, boostColor, boostF)
+                   : engineColor;
 
   strip->SetPixelColor(pixel, color);
 }
@@ -47,15 +65,17 @@ void Engine::setPower(float power1)
 void Engine::applyControls(AxisControl *controls[])
 {
   float totalThrottle = 0;
-  
+
   for (int i = 0; i < weightsCount; i++) {
     totalThrottle += controls[i]->throttle * controlWeights[i];
   }
 
+  totalThrottle = 1 + log10(totalThrottle * 0.9 + 0.1);
+
   this->setThrottle(totalThrottle);
 }
 
-void Engine::setControlWeights(float weights[], int count)
+void Engine::setControlWeights(const float weights[], int count)
 {
   controlWeights = weights;
   weightsCount = count;
