@@ -1,7 +1,7 @@
 
 #include "Engine.h"
 
-Engine::Engine(int pixel1, NeoPixelBus<NeoGrbFeature, Neo800KbpsMethod> &strip1) {
+Engine::Engine(unsigned short pixel1, NeoPixelBus<NeoGrbFeature, Neo800KbpsMethod> &strip1) {
   pixel = pixel1;
   strip = &strip1;
   engineColor = HsbColor(0.5, 0.8, 0.1);
@@ -67,7 +67,8 @@ void Engine::applyControls(AxisControl *controls[])
   float totalThrottle = 0;
 
   for (int i = 0; i < weightsCount; i++) {
-    totalThrottle += controls[i]->throttle * controlWeights[i];
+    float weight = controlWeights[i] * 0.01;
+    totalThrottle += controls[i]->throttle * weight;
   }
 
   totalThrottle = 1 + log10(totalThrottle * 0.9 + 0.1);
@@ -75,7 +76,7 @@ void Engine::applyControls(AxisControl *controls[])
   this->setThrottle(totalThrottle);
 }
 
-void Engine::setControlWeights(const float weights[], int count)
+void Engine::setControlWeights(const short weights[], unsigned short count)
 {
   controlWeights = weights;
   weightsCount = count;

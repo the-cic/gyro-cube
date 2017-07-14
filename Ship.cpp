@@ -3,44 +3,34 @@
 
 Ship::Ship(NeoPixelBus<NeoGrbFeature, Neo800KbpsMethod> &strip)
 {
-  rearEngine = new Engine(0, strip);
-  frontEngine = new Engine(1, strip);
-
-  blEngine = new Engine(2, strip);
-  brEngine = new Engine(3, strip);
-  trEngine = new Engine(4, strip);
-  tlEngine = new Engine(5, strip);
-
-  frontEngine->setControlWeights(frontW, 6);
-  rearEngine->setControlWeights(rearW, 6);
-  blEngine->setControlWeights(blW, 6);
-  brEngine->setControlWeights(brW, 6);
-  tlEngine->setControlWeights(tlW, 6);
-  trEngine->setControlWeights(trW, 6);
+  for (int i = 0; i < ENGINE_COUNT; i++) {
+    engines[i] = new Engine(i, strip);
+  }
+  
+  engines[0]->setControlWeights(rearW, AXIS_COUNT);
+  engines[1]->setControlWeights(frontW, AXIS_COUNT);
+  engines[2]->setControlWeights(blW, AXIS_COUNT);
+  engines[3]->setControlWeights(brW, AXIS_COUNT);
+  engines[4]->setControlWeights(trW, AXIS_COUNT);
+  engines[5]->setControlWeights(tlW, AXIS_COUNT);
 }
 
 void Ship::applyControls(AxisControl *axisControls[])
 {
-  frontEngine->applyControls(axisControls);
-  rearEngine->applyControls(axisControls);
-  blEngine->applyControls(axisControls);
-  brEngine->applyControls(axisControls);
-  trEngine->applyControls(axisControls);
-  tlEngine->applyControls(axisControls);
+  for (int i = 0; i < ENGINE_COUNT; i++) {
+    engines[i]->applyControls(axisControls);
+  }
 }
 
 void Ship::powerUp()
 {
-  rearEngine->setPower(1);
-  frontEngine->setPower(1);
-  blEngine->setPower(1);
-  brEngine->setPower(1);
-  trEngine->setPower(1);
-  tlEngine->setPower(1);
+  for (int i = 0; i < ENGINE_COUNT; i++) {
+    engines[i]->setPower(1);
+  }
 }
 
 void Ship::boost()
 {
-  rearEngine->setBoost(1);
+  engines[0]->setBoost(1);
 }
 

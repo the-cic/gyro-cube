@@ -6,6 +6,9 @@
 #include "AxisControl.h"
 #include "Engine.h"
 
+#define ENGINE_COUNT 6
+#define AXIS_COUNT 6
+
 class Ship
 {
   public:
@@ -18,19 +21,13 @@ class Ship
 
     void boost();
 
-    Engine *rearEngine;
-    Engine *frontEngine;
+    Engine *engines[ENGINE_COUNT];
 
-    Engine *blEngine;
-    Engine *brEngine;
-    Engine *trEngine;
-    Engine *tlEngine;
-
-    float frontW[6] = { -1,  0,  0,   0, 0, 0};
-    float rearW[6]  = { 1,  0,  0,   0, 0, 0};
-    float blW[6]    = { 0,  1,  1,   0.5, 0, 0};
-    float brW[6]    = { 0, -1,  1,  -0.5, 0, 0};
-    float tlW[6]    = { 0,  1, -1,  -0.5, 0, 0};
-    float trW[6]    = { 0, -1, -1,   0.5, 0, 0};
+    short rearW[AXIS_COUNT]  = {  100,    0,    0,    0,  0, 0};
+    short frontW[AXIS_COUNT] = { -100,    0,    0,    0,  0, 0};
+    short blW[AXIS_COUNT]    = {    0,  100,  100,   50, 0, 0};
+    short brW[AXIS_COUNT]    = {    0, -100,  100,  -50, 0, 0};
+    short trW[AXIS_COUNT]    = {    0, -100, -100,   50, 0, 0};
+    short tlW[AXIS_COUNT]    = {    0,  100, -100,  -50, 0, 0};
 
 };

@@ -9,13 +9,13 @@ class Engine
 {
   public:
 
-  Engine(int pixel1, NeoPixelBus<NeoGrbFeature, Neo800KbpsMethod> &strip1);
+  Engine(unsigned short pixel1, NeoPixelBus<NeoGrbFeature, Neo800KbpsMethod> &strip1);
 
   void setThrottle(float throttle1);
   void setBoost(float boost1);
   void setPower(float power1);
   void applyControls(AxisControl *controls[]);
-  void setControlWeights(const float weights[], int count);
+  void setControlWeights(const short weights[], unsigned short count);
 
   private:
   
@@ -24,12 +24,12 @@ class Engine
   
   NeoPixelBus<NeoGrbFeature, Neo800KbpsMethod> *strip;
   
-  int pixel;
+  unsigned short pixel;
   float boost;
   float power;
   float powerSetting;
-  const float* controlWeights;
-  int weightsCount;
+  const short* controlWeights;
+  unsigned short weightsCount;
   int coolOff;
 
 };
