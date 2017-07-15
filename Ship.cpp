@@ -7,12 +7,12 @@ Ship::Ship(NeoPixelBus<NeoGrbFeature, Neo800KbpsMethod> &strip)
     engines[i] = new Engine(i, strip);
   }
   
-  engines[0]->setControlWeights(rearW, AXIS_COUNT);
-  engines[1]->setControlWeights(frontW, AXIS_COUNT);
-  engines[2]->setControlWeights(blW, AXIS_COUNT);
-  engines[3]->setControlWeights(brW, AXIS_COUNT);
-  engines[4]->setControlWeights(trW, AXIS_COUNT);
-  engines[5]->setControlWeights(tlW, AXIS_COUNT);
+  engines[0]->setControlWeights(w0, AXIS_COUNT);
+  engines[1]->setControlWeights(w1, AXIS_COUNT);
+  engines[2]->setControlWeights(w2, AXIS_COUNT);
+  engines[3]->setControlWeights(w3, AXIS_COUNT);
+  engines[4]->setControlWeights(w4, AXIS_COUNT);
+  engines[5]->setControlWeights(w5, AXIS_COUNT);
 }
 
 void Ship::applyControls(AxisControl *axisControls[])
