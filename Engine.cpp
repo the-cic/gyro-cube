@@ -1,24 +1,32 @@
 
 #include "Engine.h"
 
-Engine::Engine(unsigned short pixel1, NeoPixelBus<NeoGrbFeature, Neo800KbpsMethod> &strip1) {
+Engine::Engine(char pixel1, NeoPixelBus<NeoGrbFeature, Neo800KbpsMethod> &strip1) {
   pixel = pixel1;
   strip = &strip1;
-  engineColor = HsbColor(0.5, 0.8, 0.1);
-  boostColor = HsbColor(0.05, 1, 1);
   power = 0;
   powerSetting = 0;
   coolOff = 0;
   boost = 0;
 }
 
+HsbColor Engine::getEngineColor() {
+  static HsbColor c(0.5, 0.8, 0.1);
+  return c;
+}
+
+HsbColor Engine::getBoostColor() {
+  static HsbColor c(0.05, 1, 1);
+  return c;
+}
+
 void Engine::setThrottle(float throttle)
 {
   float boostF = 0;
   if (boost > 0) {
-    boost -= 0.05;
-    boostF = boost > 0.5 ? 1 : boost * 2;
-    boostF += sin(boost * 180) * 0.3;
+    boost -= 5;
+    boostF = boost > 50 ? 1 : boost * 0.02;
+    boostF += sin(boost * 1.80) * 0.3;
     if (boostF > 1) {
       boostF = 1;
     }
@@ -27,13 +35,13 @@ void Engine::setThrottle(float throttle)
   }
 
   float B = throttle > 0 ? throttle : 0;
-  B *= power;
+  B *= power * 0.01;
 
   if (B > 0.02) {
     coolOff = 5;
   } else {
-    coolOff--;
     if (coolOff > 0) {
+      coolOff--;
       B = 0.02;
     } else {
       B = 0;
@@ -42,11 +50,14 @@ void Engine::setThrottle(float throttle)
 
   B = (B > 1) ? 1 : B;
 
-  power += (powerSetting - power) * 0.01;
+  if (powerSetting != power) {
+    power += powerSetting > power ? 5 : -5;
+  }
 
+  HsbColor engineColor = getEngineColor();
   engineColor.B = B;
   HsbColor color = boostF > 0
-                   ? HsbColor::LinearBlend<NeoHueBlendShortestDistance>(engineColor, boostColor, boostF)
+                   ? HsbColor::LinearBlend<NeoHueBlendShortestDistance>(engineColor, getBoostColor(), boostF)
                    : engineColor;
 
   strip->SetPixelColor(pixel, color);
@@ -54,12 +65,12 @@ void Engine::setThrottle(float throttle)
 
 void Engine::setBoost(float boost1)
 {
-  boost = boost1;
+  boost = boost1 * 100;
 }
 
 void Engine::setPower(float power1)
 {
-  powerSetting = power1;
+  powerSetting = power1 * 100;
 }
 
 void Engine::applyControls(AxisControl *controls[])
@@ -76,7 +87,7 @@ void Engine::applyControls(AxisControl *controls[])
   this->setThrottle(totalThrottle);
 }
 
-void Engine::setControlWeights(const short weights[], unsigned short count)
+void Engine::setControlWeights(signed char weights[], char count)
 {
   controlWeights = weights;
   weightsCount = count;

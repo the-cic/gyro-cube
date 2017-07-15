@@ -23,11 +23,11 @@ class Ship
 
     Engine *engines[ENGINE_COUNT];
 
-    short rearW[AXIS_COUNT]  = {  100,    0,    0,    0,  0, 0};
-    short frontW[AXIS_COUNT] = { -100,    0,    0,    0,  0, 0};
-    short blW[AXIS_COUNT]    = {    0,  100,  100,   50, 0, 0};
-    short brW[AXIS_COUNT]    = {    0, -100,  100,  -50, 0, 0};
-    short trW[AXIS_COUNT]    = {    0, -100, -100,   50, 0, 0};
-    short tlW[AXIS_COUNT]    = {    0,  100, -100,  -50, 0, 0};
+    signed char rearW[AXIS_COUNT]  = {  100,    0,    0,    0,  0, 0};
+    signed char frontW[AXIS_COUNT] = { -100,    0,    0,    0,  0, 0};
+    signed char blW[AXIS_COUNT]    = {    0,  100,  100,   50, 0, 0};
+    signed char brW[AXIS_COUNT]    = {    0, -100,  100,  -50, 0, 0};
+    signed char trW[AXIS_COUNT]    = {    0, -100, -100,   50, 0, 0};
+    signed char tlW[AXIS_COUNT]    = {    0,  100, -100,  -50, 0, 0};
 
 };

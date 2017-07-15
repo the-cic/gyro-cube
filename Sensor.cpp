@@ -26,6 +26,7 @@ bool Sensor::initSensor(void)
 void Sensor::readSensor(void)
 {
 #ifdef MPU_6050
+
   int16_t iax, iay, iaz;
   int16_t igx, igy, igz;
 
@@ -40,6 +41,7 @@ void Sensor::readSensor(void)
   gz = igz / 2000.0;
 
 #else
+
   sensors_event_t event;
   accel.getEvent(&event);
   ax = event.acceleration.x;
@@ -48,6 +50,7 @@ void Sensor::readSensor(void)
   gx = 0;
   gy = 0;
   gz = 0;
+
 #endif
 }
 

@@ -39,6 +39,13 @@ void setup()
   strip.Begin();
   strip.Show();
 
+//  Serial.println(sizeof(AxisControl));
+//  Serial.println(sizeof(Engine));
+//  Serial.println(sizeof(Sensor));
+//  Serial.println(sizeof(Ship));
+//  
+//  Serial.println(sizeof(AxisControl) * AXIS_COUNT + sizeof(Engine) * ENGINE_COUNT + sizeof(Ship) + sizeof(Sensor));
+
   setupAcc();
 }
 
