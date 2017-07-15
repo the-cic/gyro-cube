@@ -30,7 +30,7 @@ class Engine
   signed char powerSetting;
   signed char* controlWeights;
   char weightsCount;
-  signed char coolOff;
+//  signed char coolOff;
 
 };
 

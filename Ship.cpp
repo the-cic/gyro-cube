@@ -32,5 +32,6 @@ void Ship::powerUp()
 void Ship::boost()
 {
   engines[0]->setBoost(1);
+  engines[1]->setBoost(1);
 }
 

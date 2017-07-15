@@ -23,11 +23,13 @@ class Ship
 
     Engine *engines[ENGINE_COUNT];
 
-    signed char w0[AXIS_COUNT] = {  100,    0,    0,    0,  0,  0}; // rear
-    signed char w1[AXIS_COUNT] = { -100,    0,    0,    0,  0,  0}; // front
-    signed char w2[AXIS_COUNT] = {    0,  100,  100,   50,  0,  0}; // b l
-    signed char w3[AXIS_COUNT] = {    0, -100,  100,  -50,  0,  0}; // b r
-    signed char w4[AXIS_COUNT] = {    0, -100, -100,   50,  0,  0}; // t r
-    signed char w5[AXIS_COUNT] = {    0,  100, -100,  -50,  0,  0}; // t l
+    // x - forward, y - right, z - up
+
+    signed char w0[AXIS_COUNT] = {  70,   0,   0,    0,   0,  50}; // rear R
+    signed char w1[AXIS_COUNT] = {  70,   0,   0,    0,   0, -50}; // rear L
+    signed char w2[AXIS_COUNT] = { -70,  70,  70,   50, -50,   0}; // f l
+    signed char w3[AXIS_COUNT] = { -70, -70,  70,  -50, -50,   0}; // f r
+    signed char w4[AXIS_COUNT] = {   0,  70,  70,   50,  50,   0}; // a l
+    signed char w5[AXIS_COUNT] = {   0, -70,  70,  -50,  50,   0}; // a r
 
 };

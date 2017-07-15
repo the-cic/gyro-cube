@@ -6,7 +6,7 @@ Engine::Engine(char pixel1, NeoPixelBus<NeoGrbFeature, Neo800KbpsMethod> &strip1
   strip = &strip1;
   power = 0;
   powerSetting = 0;
-  coolOff = 0;
+  //  coolOff = 0;
   boost = 0;
 }
 
@@ -37,15 +37,15 @@ void Engine::setThrottle(float throttle)
   float B = throttle > 0 ? throttle : 0;
   B *= power * 0.01;
 
-  if (B > 0.02) {
-    coolOff = 5;
+  if (B > 0.005) {
+    //    coolOff = 5;
   } else {
-    if (coolOff > 0) {
-      coolOff--;
-      B = 0.02;
-    } else {
-      B = 0;
-    }
+    //    if (coolOff > 0) {
+    //      coolOff--;
+    //      B = 0.02;
+    //    } else {
+    //      B = 0.02;
+    //    }
   }
 
   B = (B > 1) ? 1 : B;
@@ -82,7 +82,7 @@ void Engine::applyControls(AxisControl *controls[])
     totalThrottle += controls[i]->throttle * weight;
   }
 
-  totalThrottle = 1 + log10(totalThrottle * 0.9 + 0.1);
+  //  totalThrottle = 1 + log10(totalThrottle * 0.9 + 0.1);
 
   this->setThrottle(totalThrottle);
 }
